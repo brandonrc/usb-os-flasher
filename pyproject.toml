@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "usb_os_flasher"
+version = "0.1.0"
+description = "A Python GUI application to flash a USB device with a compressed xz image file"
+authors = ["Brandon Geraci <brandon.geraci@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+pyudev = "^0.22.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
