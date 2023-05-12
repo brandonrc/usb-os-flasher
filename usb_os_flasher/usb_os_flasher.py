@@ -53,34 +53,29 @@ class FlashApp:
         for device in self.context.list_devices(subsystem='usb'):
             return device.device_node
 
+    def uncompress_image(self, filename, device):
+        process = subprocess.Popen(
+            ['xzcat', filename, '|', 'pv', '-s', str(os.path.getsize(filename)), '|', 'dd', f'of={device}', 'bs=4M'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        while True:
+            output = process.stderr.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                progress = int(output.strip().split()[0])
+                self.progress['value'] = progress
+
     def clean_and_flash_device(self, device, filename):
         # Clean the device
         self.clean_device(device)
 
-        # Decompress the xz file
-        os.system(f'unxz --keep {filename}')
-
-        # Get the image file name
-        image_file = filename.rstrip('.xz')
-
-        # Use the dd command to flash the USB
-        # Run dd in a separate process, and get its output
-        process = Popen(['sudo', 'dd', f'if={image_file}', f'of={device}', 'bs=4M', 'status=progress'], stdout=PIPE, stderr=STDOUT)
-        for line in iter(process.stdout.readline, b''):
-            # Parse the output to get the progress
-            # This assumes the output is in the format: 'bytes_transferred bytes'
-            bytes_transferred = int(line.split()[0])
-            self.update_progress(bytes_transferred)
+        self.uncompress_image(filename=filename, device=device)
 
         # Inform the user
         self.label.config(text=f"Flashing {device} with {filename} completed.")
-
-    def update_progress(self, bytes_transferred):
-        # Calculate the progress and update the progress bar
-        # This assumes the total size is known
-        total_size = 1000000000  # Replace with the actual total size
-        progress = (bytes_transferred / total_size) * 100
-        self.progress['value'] = progress
  
     def clean_device(self, device):
         
