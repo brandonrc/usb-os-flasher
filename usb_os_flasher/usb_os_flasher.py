@@ -83,14 +83,13 @@ class FlashApp:
         self.progress['value'] = progress
  
     def clean_device(self, device):
-        # Unmount all partitions
-        # subprocess.run(['umount', '-f', f'{device}*'], check=False)
-
-        # All images that osbuilder makes has the volume group named root. 
-        # We should try to keep this the same when we move to kickstart files
-        # and preceed files for ubuntu. '
         
-        self.remove_volume_group("rootvg")
+        vgname = self.get_vg_name(device=device)
+
+        # If we find a volume group then we will make sure we 
+        # remove that group.
+        if (vgname is not None):
+            self.remove_volume_group()
 
         # Remove all partitions
         # subprocess.run(['sudo', 'sfdisk', '--delete', device], check=False)
@@ -100,6 +99,23 @@ class FlashApp:
         subprocess.run(['sudo', 'wipefs', '--all', device], check=False)
 
         print(f"Device {device} cleaned successfully.")
+
+    def get_vg_name(self, device):
+        # Check if 'pvs' command is available
+        if subprocess.run(["which", "pvs"], stdout=subprocess.DEVNULL).returncode != 0:
+            raise EnvironmentError("The 'pvs' command is not available. This function requires the 'lvm' package.")
+
+        try:
+            # Run 'pvs' command to get the volume group name for the device
+            output = subprocess.check_output(["sudo", "pvs", "--noheadings", "-o", "vg_name", device])
+
+            # Decode the output from bytes to string, and strip leading/trailing white space
+            vg_name = output.decode().strip()
+
+            return vg_name
+        except subprocess.CalledProcessError:
+            # If the 'pvs' command fails, the device is not part of any volume group
+            return None
 
     def remove_logical_volume(self, lv_name, vg_name):
         """
