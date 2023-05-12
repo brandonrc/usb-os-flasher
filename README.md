@@ -20,7 +20,7 @@ USB Flasher is a Python GUI application to flash a USB device with a compressed 
 ### Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/usb_os_flasher.git
+git clone https://github.com/brandonrc/usb_os_flasher.git
 ```
 
 ### Navigate to the cloned directory
@@ -66,6 +66,3 @@ This will create a `dist` directory containing the standalone application. You c
 - The cleaning and flashing process can take a while, depending on the size of the image file and the speed of your USB device. Please be patient and do not interrupt the process once it has started.
 - Use this application with caution. It will permanently delete all data on the specified USB device. Always ensure you are providing the correct device and image file to avoid data loss.
 
----
-
-Please replace `"yourusername"` with your GitHub username.
